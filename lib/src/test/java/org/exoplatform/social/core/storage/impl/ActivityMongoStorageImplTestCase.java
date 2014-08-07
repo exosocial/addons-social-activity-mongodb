@@ -19,8 +19,6 @@ package org.exoplatform.social.core.storage.impl;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.exoplatform.services.log.ExoLogger;
-import org.exoplatform.services.log.Log;
 import org.exoplatform.social.core.activity.model.ExoSocialActivity;
 import org.exoplatform.social.core.activity.model.ExoSocialActivityImpl;
 import org.exoplatform.social.core.identity.model.Identity;
@@ -28,16 +26,12 @@ import org.exoplatform.social.core.identity.provider.OrganizationIdentityProvide
 import org.exoplatform.social.core.manager.IdentityManager;
 import org.exoplatform.social.core.manager.RelationshipManager;
 import org.exoplatform.social.core.mongo.storage.ActivityMongoStorageImpl;
-import org.exoplatform.social.core.storage.api.ActivityStorage;
 import org.exoplatform.social.core.storage.api.IdentityStorage;
 import org.exoplatform.social.core.test.AbstractCoreTest;
 
 public class ActivityMongoStorageImplTestCase extends AbstractCoreTest {
   
-  private final Log LOG = ExoLogger.getLogger(ActivityMongoStorageImplTestCase.class);
-  
   private IdentityStorage identityStorage;
-  private ActivityStorage activityStorage;
   
   private ActivityMongoStorageImpl mongoStorage;
   
@@ -56,12 +50,10 @@ public class ActivityMongoStorageImplTestCase extends AbstractCoreTest {
   protected void setUp() throws Exception {
     super.setUp();
     identityStorage = (IdentityStorage) getContainer().getComponentInstanceOfType(IdentityStorage.class);
-    activityStorage = (ActivityStorage) getContainer().getComponentInstanceOfType(ActivityStorage.class);
     mongoStorage = (ActivityMongoStorageImpl) getContainer().getComponentInstanceOfType(ActivityMongoStorageImpl.class);
     identityManager = (IdentityManager) getContainer().getComponentInstanceOfType(IdentityManager.class);
     relationshipManager = (RelationshipManager) getContainer().getComponentInstanceOfType(RelationshipManager.class);
     assertNotNull("identityManager must not be null", identityStorage);
-    assertNotNull("activityStorage must not be null", activityStorage);
     rootIdentity = new Identity(OrganizationIdentityProvider.NAME, "root");
     johnIdentity = new Identity(OrganizationIdentityProvider.NAME, "john");
     maryIdentity = new Identity(OrganizationIdentityProvider.NAME, "mary");
@@ -127,12 +119,15 @@ public class ActivityMongoStorageImplTestCase extends AbstractCoreTest {
     tearDownActivityList.add(activity);
   }
   
-  public void testGetActivity() {
+  public void testSaveComment() {
     ExoSocialActivity activity = createActivity(1);
-    ExoSocialActivity activity2 = createActivity(2);
     //
     mongoStorage.saveActivity(demoIdentity, activity);
+    ExoSocialActivity comment = createActivity(2);
+    mongoStorage.saveComment(activity, comment);
     
+    ExoSocialActivity got = mongoStorage.getComment(comment.getId());
+    assertNotNull(got);
     
   }
   

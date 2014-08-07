@@ -30,6 +30,7 @@ public class ActivityMongoEntity {
   public static final PropertyLiteralExpression<String> title = new PropertyLiteralExpression<String>(String.class, "title");
   public static final PropertyLiteralExpression<String> titleId = new PropertyLiteralExpression<String>(String.class, "titleId");
   public static final PropertyLiteralExpression<String> body = new PropertyLiteralExpression<String>(String.class, "body");
+  public static final PropertyLiteralExpression<String> activity_type = new PropertyLiteralExpression<String>(String.class, "activity_type");
   public static final PropertyLiteralExpression<String> bodyId = new PropertyLiteralExpression<String>(String.class, "bodyId");
   public static final PropertyLiteralExpression<Long> postedTime = new PropertyLiteralExpression<Long>(Long.class, "postedTime");
   public static final PropertyLiteralExpression<Long> lastUpdated = new PropertyLiteralExpression<Long>(Long.class, "lastUpdated");
@@ -45,5 +46,7 @@ public class ActivityMongoEntity {
   public static final PropertyLiteralExpression<String> externalId = new PropertyLiteralExpression<String>(String.class, "externalId");
   public static final PropertyLiteralExpression<String> metadata = new PropertyLiteralExpression<String>(String.class, "metadata");
   public static final PropertyLiteralExpression<String> streamId = new PropertyLiteralExpression<String>(String.class, "streamId");
+  public static final PropertyLiteralExpression<String> params = new PropertyLiteralExpression<String>(String.class, "params");
+  public static final PropertyLiteralExpression<String> commentIds = new PropertyLiteralExpression<String>(String.class, "commentIds");
   
 }

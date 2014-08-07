@@ -40,7 +40,7 @@
   </modules>
 
   <properties>
-    <org.exoplatform.depmgt.version>9-M2</org.exoplatform.depmgt.version>
+    <org.exoplatform.depmgt.version>9-SNAPSHOT</org.exoplatform.depmgt.version>
      <org.exoplatform.kernel.version>2.4.9-GA</org.exoplatform.kernel.version>
     <org.exoplatform.core.version>2.5.9-GA</org.exoplatform.core.version>
     <org.exoplatform.ws.version>2.3.9-GA</org.exoplatform.ws.version>
@@ -52,11 +52,9 @@
     <org.gatein.pc.version>2.4.0.Final</org.gatein.pc.version>
     <org.gatein.portal.version>3.5.10.Final</org.gatein.portal.version>
     <!-- Platform Project Dependencies -->
-    <org.exoplatform.commons.version>4.1-M2</org.exoplatform.commons.version>
-    <org.exoplatform.platform-ui.version>4.1-M2</org.exoplatform.platform-ui.version>
-    
-    <org.exoplatform.calendar.version>4.1-M2</org.exoplatform.calendar.version>
-    <exoplatform.version>4.1-M2</exoplatform.version>
+    <org.exoplatform.commons.version>4.1.x-commons-stabilization-SNAPSHOT</org.exoplatform.commons.version>
+    <org.exoplatform.social.version>4.1.x-soc-stabilization-SNAPSHOT</org.exoplatform.social.version>
+    <org.exoplatform.platform-ui.version>4.1.x-plfui-stabilization-SNAPSHOT</org.exoplatform.platform-ui.version>
     
     <argLine>-Xmx1024m -XX:MaxPermSize=512m</argLine>
   </properties>
@@ -64,13 +62,12 @@
     <dependencies>
       <!-- Import versions from platform project -->
       <dependency>
-        <groupId>org.exoplatform.platform</groupId>
-        <artifactId>platform</artifactId>
-        <version>${exoplatform.version}</version>
+        <groupId>org.exoplatform</groupId>
+        <artifactId>maven-depmgt-pom</artifactId>
+        <version>${org.exoplatform.depmgt.version}</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
-      <!-- Import versions from commons project -->
       <dependency>
         <groupId>org.exoplatform.commons</groupId>
         <artifactId>commons</artifactId>
@@ -78,15 +75,21 @@
         <type>pom</type>
         <scope>import</scope>
       </dependency>
-       <!-- Import versions from calendar project -->
       <dependency>
-        <groupId>org.exoplatform.calendar</groupId>
-        <artifactId>calendar</artifactId>
-        <version>${org.exoplatform.calendar.version}</version>
+        <groupId>org.exoplatform.social</groupId>
+        <artifactId>social</artifactId>
+        <version>${org.exoplatform.social.version}</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
-      
+      <!-- Import versions from platform-ui project -->
+      <dependency>
+        <groupId>org.exoplatform.platform-ui</groupId>
+        <artifactId>platform-ui</artifactId>
+        <version>${org.exoplatform.platform-ui.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
       <!-- Our own project modules -->
       <dependency>
         <groupId>org.exoplatform.activity-mongodb-addons</groupId>
@@ -100,6 +103,28 @@
         <version>${project.version}</version>
      </dependency>
       <!-- To be replaced by an import of GateIn Portal parent POM -->
+      <dependency>
+        <groupId>org.gatein.common</groupId>
+        <artifactId>common-common</artifactId>
+        <version>${org.gatein.common.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.gatein.common</groupId>
+        <artifactId>common-logging</artifactId>
+        <version>${org.gatein.common.version}</version>
+      </dependency>
+      <!-- To be replaced by an import of GateIn PC parent POM -->
+      <dependency>
+        <groupId>org.gatein.pc</groupId>
+        <artifactId>pc-api</artifactId>
+        <version>${org.gatein.pc.version}</version>
+      </dependency>
+      <!-- To be replaced by an import of GateIn Portal parent POM -->
+      <dependency>
+        <groupId>org.gatein.portal</groupId>
+        <artifactId>exo.portal.component.application-registry</artifactId>
+        <version>${org.gatein.portal.version}</version>
+      </dependency>
       <dependency>
         <groupId>org.gatein.portal</groupId>
         <artifactId>exo.portal.component.common</artifactId>

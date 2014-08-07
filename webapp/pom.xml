@@ -32,10 +32,6 @@
   
   <dependencies>
     <dependency>
-      <groupId>org.exoplatform.calendar</groupId>
-      <artifactId>calendar-service</artifactId>
-    </dependency>
-    <dependency>
       <groupId>commons-lang</groupId>
       <artifactId>commons-lang</artifactId>
     </dependency>

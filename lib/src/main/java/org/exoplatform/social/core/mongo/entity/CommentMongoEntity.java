@@ -45,5 +45,7 @@ public class CommentMongoEntity {
   public static final PropertyLiteralExpression<String> appId = new PropertyLiteralExpression<String>(String.class, "appId");
   public static final PropertyLiteralExpression<String> externalId = new PropertyLiteralExpression<String>(String.class, "externalId");
   public static final PropertyLiteralExpression<String> metadata = new PropertyLiteralExpression<String>(String.class, "metadata");
+  public static final PropertyLiteralExpression<String> comment_type = new PropertyLiteralExpression<String>(String.class, "comment_type");
+  public static final PropertyLiteralExpression<String> params = new PropertyLiteralExpression<String>(String.class, "params");
 
 }

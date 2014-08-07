@@ -18,13 +18,15 @@ package org.exoplatform.social.core.test;
 
 import org.exoplatform.commons.testing.BaseExoContainerTestSuite;
 import org.exoplatform.commons.testing.ConfigTestCase;
+import org.exoplatform.social.core.storage.impl.ActivityManagerTest;
 import org.exoplatform.social.core.storage.impl.ActivityMongoStorageImplTestCase;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.runners.Suite.SuiteClasses;
 
 @SuiteClasses({
-  ActivityMongoStorageImplTestCase.class
+  ActivityMongoStorageImplTestCase.class,
+  ActivityManagerTest.class
   })
 @ConfigTestCase(AbstractCoreTest.class)
 public class InitContainerTestSuite extends BaseExoContainerTestSuite {
