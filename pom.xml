@@ -41,10 +41,6 @@
 
   <properties>
     <org.exoplatform.depmgt.version>9-SNAPSHOT</org.exoplatform.depmgt.version>
-     <org.exoplatform.kernel.version>2.4.9-GA</org.exoplatform.kernel.version>
-    <org.exoplatform.core.version>2.5.9-GA</org.exoplatform.core.version>
-    <!-- GateIn Project Dependencies -->
-    <org.gatein.portal.version>3.5.10.Final</org.gatein.portal.version>
     <!-- Platform Project Dependencies -->
     <org.exoplatform.social.version>4.1.x-soc-stabilization-SNAPSHOT</org.exoplatform.social.version>
     
@@ -78,12 +74,6 @@
         <artifactId>social-activity-mongodb-addons-lib</artifactId>
         <version>${project.version}</version>
      </dependency>
-      <!-- To be replaced by an import of GateIn Portal parent POM -->
-      <dependency>
-        <groupId>org.gatein.portal</groupId>
-        <artifactId>exo.portal.component.portal</artifactId>
-        <version>${org.gatein.portal.version}</version>
-      </dependency>
     </dependencies>
   </dependencyManagement>
   <dependencies>
