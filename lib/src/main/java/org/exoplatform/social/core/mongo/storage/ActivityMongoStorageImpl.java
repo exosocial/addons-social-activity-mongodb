@@ -1329,7 +1329,7 @@ public class ActivityMongoStorageImpl extends ActivityStorageImpl {
     DBCollection activityColl = CollectionName.COMMENT_COLLECTION.getCollection(this.abstractMongoStorage);
     BasicDBObject query = new BasicDBObject(CommentMongoEntity.activityId.getName(), existingActivity.getId());
 
-    DBCursor cur = activityColl.find(query);
+    DBCursor cur = activityColl.find(query).skip((int) offset).limit((int)limit);;
     List<ExoSocialActivity> result = new ArrayList<ExoSocialActivity>();
     while (cur.hasNext()) {
       BasicDBObject entity = (BasicDBObject) cur.next();
