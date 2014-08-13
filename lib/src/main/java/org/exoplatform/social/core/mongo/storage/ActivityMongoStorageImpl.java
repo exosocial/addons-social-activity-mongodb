@@ -711,6 +711,7 @@ public class ActivityMongoStorageImpl extends ActivityStorageImpl {
     long activityMillis = (activity.getPostedTime() != null ? activity.getPostedTime() : currentMillis);
     activity.setPostedTime(activityMillis);
     activity.setUpdated(activityMillis);
+    activity.setMentionedIds(processMentions(activity.getTitle()));
     
     BasicDBObject activityEntity = new BasicDBObject();
     fillActivityEntityFromActivity(poster, activity, activityEntity, true);
