@@ -44,6 +44,7 @@ import org.exoplatform.social.core.relationship.model.Relationship.Type;
 import org.exoplatform.social.core.space.model.Space;
 import org.exoplatform.social.core.storage.ActivityStorageException;
 import org.exoplatform.social.core.storage.api.ActivityStorage;
+import org.exoplatform.social.core.storage.api.ActivityStreamStorage;
 import org.exoplatform.social.core.storage.api.IdentityStorage;
 import org.exoplatform.social.core.storage.api.RelationshipStorage;
 import org.exoplatform.social.core.storage.api.SpaceStorage;
@@ -198,8 +199,9 @@ public class ActivityMongoStorageImpl extends ActivityStorageImpl {
 
   public ActivityMongoStorageImpl(RelationshipStorage relationshipStorage,
                                   IdentityStorage identityStorage,
-                                  SpaceStorage spaceStorage) {
-    super(relationshipStorage, identityStorage, spaceStorage);
+                                  SpaceStorage spaceStorage,
+                                  ActivityStreamStorage streamStorage) {
+    super(relationshipStorage, identityStorage, spaceStorage, streamStorage);
     this.mongoStorage = getMongoStorage();
     this.abstractMongoStorage = new AbstractMongoStorage(mongoStorage) {};
     this.relationshipStorage = getRelationshipStorage();
@@ -311,7 +313,7 @@ public class ActivityMongoStorageImpl extends ActivityStorageImpl {
 
     List<ExoSocialActivity> result = new LinkedList<ExoSocialActivity>();
     
-    DBCursor cur = streamCol.find(query, fields).sort(sortObj).limit( (int) limit);
+    DBCursor cur = streamCol.find(query, fields).sort(sortObj).skip((int) offset).limit( (int) limit);
     while (cur.hasNext()) {
       BasicDBObject row = (BasicDBObject) cur.next();
       //
@@ -345,7 +347,7 @@ public class ActivityMongoStorageImpl extends ActivityStorageImpl {
     
     BasicDBObject sortObj = new BasicDBObject("time", -1);
 
-    DBCursor cur = connectionColl.find(query).sort(sortObj).limit((int)limit);
+    DBCursor cur = connectionColl.find(query).sort(sortObj).skip((int) offset).limit((int)limit);
     List<ExoSocialActivity> result = new LinkedList<ExoSocialActivity>();
     while (cur.hasNext()) {
       BasicDBObject row = (BasicDBObject) cur.next();
@@ -1058,16 +1060,10 @@ public class ActivityMongoStorageImpl extends ActivityStorageImpl {
     
     BasicDBObject sortObj = new BasicDBObject(StreamItemMongoEntity.time.getName(), -1);
 
-    DBCursor cur = streamCol.find(query).sort(sortObj).limit(limit);
+    DBCursor cur = streamCol.find(query).sort(sortObj).skip(offset).limit(limit);
     List<ExoSocialActivity> result = new LinkedList<ExoSocialActivity>();
     while (cur.hasNext()) {
       BasicDBObject row = (BasicDBObject) cur.next();
-      //
-      if (offset > 0) {
-        offset--;
-        continue;
-      }
-      //
       String activityId = row.getString(StreamItemMongoEntity.activityId.getName());
       result.add(getStorage().getActivity(activityId));
     }
@@ -1161,7 +1157,7 @@ public class ActivityMongoStorageImpl extends ActivityStorageImpl {
     
     BasicDBObject sortObj = new BasicDBObject("time", -1);
     
-    DBCursor cur = streamCol.find(byRelationships).sort(sortObj).limit(limit);
+    DBCursor cur = streamCol.find(byRelationships).sort(sortObj).skip(offset).limit(limit);
     List<ExoSocialActivity> result = new LinkedList<ExoSocialActivity>();
     while (cur.hasNext()) {
       BasicDBObject row = (BasicDBObject) cur.next();
@@ -1253,7 +1249,7 @@ public class ActivityMongoStorageImpl extends ActivityStorageImpl {
                                                                    int limit) {
     List<ExoSocialActivity> result = new LinkedList<ExoSocialActivity>();
 
-    DBCursor cur = getUserSpaceActivitiesDBCursor(ownerIdentity).limit(limit);
+    DBCursor cur = getUserSpaceActivitiesDBCursor(ownerIdentity).skip(offset).limit(limit);
     while (cur.hasNext()) {
       BasicDBObject row = (BasicDBObject) cur.next();
       //
@@ -1477,7 +1473,7 @@ public class ActivityMongoStorageImpl extends ActivityStorageImpl {
     BasicDBObject fields = new BasicDBObject(StreamItemMongoEntity.activityId.getName(), 1)
     .append(StreamItemMongoEntity.time.getName(), 1);
     
-    DBCursor cur = connectionColl.find(query, fields).sort(sortObj).limit(limit);
+    DBCursor cur = connectionColl.find(query, fields).sort(sortObj).skip(index).limit(limit);
     List<ExoSocialActivity> result = new LinkedList<ExoSocialActivity>();
     while (cur.hasNext()) {
       BasicDBObject row = (BasicDBObject) cur.next();

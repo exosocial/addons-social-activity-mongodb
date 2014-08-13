@@ -31,7 +31,7 @@
   <description>Social Activity MongoDB Addon Webapp</description>
   
   <build>
-    <finalName>social-activity-mongodb-addons-webapp</finalName>
+    <finalName>social-activity-mongodb-addons</finalName>
   </build>
   
 </project>
