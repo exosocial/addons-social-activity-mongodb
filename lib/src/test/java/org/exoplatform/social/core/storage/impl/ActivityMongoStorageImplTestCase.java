@@ -124,6 +124,7 @@ public class ActivityMongoStorageImplTestCase extends AbstractCoreTest {
     //
     mongoStorage.saveActivity(demoIdentity, activity);
     ExoSocialActivity comment = createActivity(2);
+    comment.setUserId(demoIdentity.getId());
     mongoStorage.saveComment(activity, comment);
     
     ExoSocialActivity got = mongoStorage.getComment(comment.getId());

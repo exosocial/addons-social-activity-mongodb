@@ -21,6 +21,8 @@ public class MongoStorage implements Startable {
   /** . */
   private final int port;
   
+  private final String name;
+  
   /**
    * Create a mongo store with the specified init params.
    *
@@ -31,20 +33,22 @@ public class MongoStorage implements Startable {
       //
       ValueParam hostParam = params.getValueParam("host");
       ValueParam portParam = params.getValueParam("port");
-
+      ValueParam nameParam = params.getValueParam("name");
       //
       String host = hostParam != null ? hostParam.getValue().trim() : "localhost";
       int port = portParam != null ? Integer.parseInt(portParam.getValue().trim()) : 27017;
+      String name = nameParam != null ? nameParam.getValue().trim() : "social";
 
       this.host = host;
       this.port = port;
+      this.name = name;
   }
 
   /**
    * Create a mongo store with <code>localhost</code> host and <code>27017</code> port.
    */
   public MongoStorage() {
-      this("localhost", 27017);
+      this("localhost", 27017, "social");
   }
   
   /**
@@ -53,9 +57,10 @@ public class MongoStorage implements Startable {
    * @param host the host
    * @param port the port
    */
-  public MongoStorage(String host, int port) {
+  public MongoStorage(String host, int port, String name) {
       this.host = host;
       this.port = port;
+      this.name = name;
   }
   
   public DB getDB() {
@@ -67,7 +72,7 @@ public class MongoStorage implements Startable {
   public void start() {
     try {
       MongoClient mongo = new MongoClient(host, port);
-      this.db = mongo.getDB("social");
+      this.db = mongo.getDB(name);
       //DB admin = mongo.getDB("admin");
       //DBObject cmd = new BasicDBObject("shardCollection",new BasicDBObject()
                                        //.append("social.comment", new BasicDBObject("_id", "hashed")));

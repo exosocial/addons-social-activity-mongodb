@@ -37,6 +37,7 @@ import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.organization.OrganizationService;
 import org.exoplatform.services.organization.User;
+import org.exoplatform.social.core.mongo.storage.MongoStorage;
 import org.exoplatform.social.core.space.SpaceException;
 import org.exoplatform.social.core.space.SpaceUtils;
 import org.exoplatform.social.core.space.model.Space;
@@ -58,17 +59,19 @@ public abstract class AbstractCoreTest extends BaseExoTestCase {
   private final Log LOG = ExoLogger.getLogger(AbstractCoreTest.class);
   protected SpaceService spaceService;
   protected Session session;
+  private MongoStorage mongoStorage;
   
   @Override
   protected void setUp() throws Exception {
     //
     begin();
-    
+    mongoStorage = (MongoStorage)  getContainer().getComponentInstanceOfType(MongoStorage.class);
     spaceService = (SpaceService) getContainer().getComponentInstanceOfType(SpaceService.class);
   }
 
   @Override
   protected void tearDown() throws Exception {
+    mongoStorage.getDB().dropDatabase();
     //
     end();
   }

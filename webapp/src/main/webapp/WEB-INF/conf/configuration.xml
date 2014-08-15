@@ -27,6 +27,11 @@
     <type>org.exoplatform.social.core.mongo.storage.MongoStorage</type>
     <init-params>
         <value-param>
+          <name>name</name>
+          <description>Name of MongoDB</description>
+          <value>social</value>
+        </value-param>
+        <value-param>
           <name>host</name>
           <description>Host of MongoDB</description>
           <value>localhost</value>
