@@ -1072,6 +1072,8 @@ public class ActivityMongoStorageImpl extends ActivityStorageImpl {
     BasicDBObject isHidden = new BasicDBObject(StreamItemMongoEntity.hiable.getName(), false);
     //
     BasicDBObject byViewer = new BasicDBObject(StreamItemMongoEntity.viewerId.getName(), ownerIdentity.getId());
+    //
+    BasicDBObject byPoster = new BasicDBObject(StreamItemMongoEntity.poster.getName(), ownerIdentity.getId());
     //get spaces where user is member
     List<Space> spaces = spaceStorage.getMemberSpaces(ownerIdentity.getRemoteId());
     String[] spaceIds = new String[0];
@@ -1081,9 +1083,9 @@ public class ActivityMongoStorageImpl extends ActivityStorageImpl {
     BasicDBObject bySpaces = new BasicDBObject(StreamItemMongoEntity.owner.getName(), new BasicDBObject("$in", spaceIds));
     //Filter by posted time if need
     if (timer != null) {
-      query.append("$and", new BasicDBObject[] {timer, isHidden, new BasicDBObject("$or", new BasicDBObject[]{ byViewer, bySpaces, byRelationships })});
+      query.append("$and", new BasicDBObject[] {timer, isHidden, new BasicDBObject("$or", new BasicDBObject[]{ byViewer, byPoster, bySpaces, byRelationships })});
     } else {
-      query.append("$and", new BasicDBObject[] {isHidden, new BasicDBObject("$or", new BasicDBObject[]{ byViewer, bySpaces, byRelationships })});
+      query.append("$and", new BasicDBObject[] {isHidden, new BasicDBObject("$or", new BasicDBObject[]{ byViewer, byPoster, bySpaces, byRelationships })});
     }
     
     return query;

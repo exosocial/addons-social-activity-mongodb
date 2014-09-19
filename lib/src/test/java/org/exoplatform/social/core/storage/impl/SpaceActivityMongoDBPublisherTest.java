@@ -33,8 +33,10 @@ import org.exoplatform.social.core.identity.provider.OrganizationIdentityProvide
 import org.exoplatform.social.core.identity.provider.SpaceIdentityProvider;
 import org.exoplatform.social.core.manager.ActivityManager;
 import org.exoplatform.social.core.manager.IdentityManager;
+import org.exoplatform.social.core.manager.RelationshipManager;
 import org.exoplatform.social.core.model.AvatarAttachment;
 import org.exoplatform.social.core.mongo.storage.MongoStorage;
+import org.exoplatform.social.core.relationship.model.Relationship;
 import org.exoplatform.social.core.space.impl.DefaultSpaceApplicationHandler;
 import org.exoplatform.social.core.space.model.Space;
 import org.exoplatform.social.core.space.model.Space.UpdatedField;
@@ -52,6 +54,7 @@ public class SpaceActivityMongoDBPublisherTest extends  AbstractCoreTest {
   private final Log LOG = ExoLogger.getLogger(SpaceActivityMongoDBPublisherTest.class);
   private ActivityManager activityManager;
   private IdentityManager identityManager;
+  private RelationshipManager relationshipManager;
   private IdentityStorage identityStorage;
   private SpaceService spaceService;
   private SpaceStorage spaceStorage;
@@ -75,6 +78,7 @@ public class SpaceActivityMongoDBPublisherTest extends  AbstractCoreTest {
     assertNotNull("spaceActivityPublisher must not be null", spaceActivityPublisher);
     identityStorage =  (IdentityStorage) getContainer().getComponentInstanceOfType(IdentityStorage.class);
     assertNotNull("identityStorage must not be null", identityStorage);
+    relationshipManager = (RelationshipManager) getContainer().getComponentInstanceOfType(RelationshipManager.class);
   }
 
   @Override
@@ -125,6 +129,12 @@ public class SpaceActivityMongoDBPublisherTest extends  AbstractCoreTest {
     RealtimeListAccess<ExoSocialActivity> listAccess = activityManager.getActivitiesOfSpaceWithListAccess(spaceIdentity);
     assertEquals(1, listAccess.getSize());
     assertEquals(1, listAccess.loadAsList(0, 10).size());
+    
+    Relationship demoRootConnection = relationshipManager.inviteToConnect(demoIdentity, rootIdentity);
+    relationshipManager.confirm(rootIdentity, demoIdentity);
+    
+    List<ExoSocialActivity> activities = activityManager.getActivityFeedWithListAccess(demoIdentity).loadAsList(0, 10);
+    assertEquals(0, activities.size());
 
     //add demo to the space
     spaceService.addMember(space, demoIdentity.getRemoteId());
@@ -132,6 +142,9 @@ public class SpaceActivityMongoDBPublisherTest extends  AbstractCoreTest {
     listAccess = activityManager.getActivitiesOfSpaceWithListAccess(spaceIdentity);
     assertEquals(1, listAccess.getSize());
     assertEquals(1, listAccess.loadAsList(0, 10).size());
+    
+    //
+    relationshipManager.delete(demoRootConnection);
   }
   
   /**
