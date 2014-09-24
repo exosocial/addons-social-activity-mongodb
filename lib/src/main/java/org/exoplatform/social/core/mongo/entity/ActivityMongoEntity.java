@@ -38,6 +38,7 @@ public class ActivityMongoEntity {
   public static final PropertyLiteralExpression<String> owner = new PropertyLiteralExpression<String>(String.class, "owner");
   public static final PropertyLiteralExpression<String[]> likers = new PropertyLiteralExpression<String[]>(String[].class, "likers");
   public static final PropertyLiteralExpression<String[]> mentioners = new PropertyLiteralExpression<String[]>(String[].class, "mentioners");
+  public static final PropertyLiteralExpression<String[]> commenters = new PropertyLiteralExpression<String[]>(String[].class, "commenters");
   public static final PropertyLiteralExpression<String> permaLink = new PropertyLiteralExpression<String>(String.class, "permaLink");
   public static final PropertyLiteralExpression<Integer> priority = new PropertyLiteralExpression<Integer>(Integer.class, "priority");
   public static final PropertyLiteralExpression<Boolean> hidable = new PropertyLiteralExpression<Boolean>(Boolean.class, "hidable");

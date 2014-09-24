@@ -399,14 +399,21 @@ public class ActivityMongoStorageImpl extends ActivityStorageImpl {
         commentEntity.append(CommentMongoEntity.params.getName(), comment.getTemplateParams());
       }
       
+      List<String> mentioners = new ArrayList<String>();
+      activity.setMentionedIds(processMentions(activity.getMentionedIds(), comment.getTitle(), mentioners, true));
+      List<String> commenters = new ArrayList<String>(Arrays.asList(activity.getCommentedIds()));
+      if (comment.getUserId() != null && ! commenters.contains(comment.getUserId())) {
+        commenters.add(comment.getUserId());
+      }
+      activity.setCommentedIds(commenters.toArray(new String[0]));
+      
+      comment.setMentionedIds(processMentions(comment.getTitle()));
+      commentEntity.append(CommentMongoEntity.mentioners.getName(), comment.getMentionedIds());
+      
       commentColl.insert(commentEntity);
       
       comment.setId(commentEntity.getString("_id") != null ? commentEntity.getString("_id") : null);
       comment.setUpdated(commentMillis);
-      
-      //update activity
-      BasicDBObject update = new BasicDBObject("$set", new BasicDBObject(ActivityMongoEntity.lastUpdated.getName(), commentMillis));
-      activityCol.update(new BasicDBObject("_id", new ObjectId(activity.getId())), update);
       
       Identity poster = new Identity(activity.getPosterId());
       poster.setRemoteId(activity.getStreamOwner());
@@ -421,7 +428,13 @@ public class ActivityMongoStorageImpl extends ActivityStorageImpl {
       }
       listIds.add(commentEntity.getString("_id"));
       activity.setReplyToId(listIds.toArray(new String[]{}));
-      update = new BasicDBObject("$set", new BasicDBObject(ActivityMongoEntity.commentIds.getName(), listIds));
+      //update activity
+      BasicDBObject updateFields = new BasicDBObject();
+      updateFields.append(ActivityMongoEntity.lastUpdated.getName(), commentMillis)
+                  .append(ActivityMongoEntity.commenters.getName(), activity.getCommentedIds())
+                  .append(ActivityMongoEntity.mentioners.getName(), activity.getMentionedIds())
+                  .append(ActivityMongoEntity.commentIds.getName(), listIds);
+      BasicDBObject update = new BasicDBObject("$set", updateFields);
       activityCol.update(new BasicDBObject("_id", new ObjectId(activity.getId())), update);
       
       //make COMMENTER ref
@@ -625,6 +638,8 @@ public class ActivityMongoStorageImpl extends ActivityStorageImpl {
 
     activityEntity.append(ActivityMongoEntity.permaLink.getName(),  activity.getPermaLink());
     activityEntity.append(ActivityMongoEntity.likers.getName(), activity.getLikeIdentityIds());
+    activityEntity.append(ActivityMongoEntity.mentioners.getName(), activity.getMentionedIds());
+    activityEntity.append(ActivityMongoEntity.commenters.getName(), activity.getCommentedIds());
 
     activityEntity.append(ActivityMongoEntity.hidable.getName(),  activity.isHidden());
     activityEntity.append(ActivityMongoEntity.lockable.getName(),  activity.isLocked());
@@ -659,6 +674,9 @@ public class ActivityMongoStorageImpl extends ActivityStorageImpl {
     
     BasicBSONList mentions = (BasicBSONList) activityEntity.get(ActivityMongoEntity.mentioners.getName());
     activity.setMentionedIds(mentions != null ? mentions.toArray(new String[0]) : new String[0]);
+    
+    BasicBSONList commenters = (BasicBSONList) activityEntity.get(ActivityMongoEntity.commenters.getName());
+    activity.setCommentedIds(commenters != null ? commenters.toArray(new String[0]) : new String[0]);
 
     activity.isHidden(activityEntity.getBoolean(ActivityMongoEntity.hidable.getName()));
     activity.isLocked(activityEntity.getBoolean(ActivityMongoEntity.lockable.getName()));
@@ -905,6 +923,35 @@ public class ActivityMongoStorageImpl extends ActivityStorageImpl {
     String[] mentionIds = processMentions(comment.getString(ActivityMongoEntity.title.getName()));
     //update activities refs for mentioner
     removeMentioner(activityId, mentionIds);
+    
+    
+    DBCollection activityCol = CollectionName.ACTIVITY_COLLECTION.getCollection(this.abstractMongoStorage);
+    query = new BasicDBObject();
+    query.append(ActivityMongoEntity.id.getName(), new ObjectId(activityId));
+    BasicDBObject activityEntity = (BasicDBObject) activityCol.findOne(query);
+    
+    BasicBSONList mentions = (BasicBSONList) activityEntity.get(ActivityMongoEntity.mentioners.getName());
+    String[] mentioners = mentions != null ? mentions.toArray(new String[0]) : new String[0];
+    
+    BasicBSONList comments = (BasicBSONList) activityEntity.get(ActivityMongoEntity.commenters.getName());
+    String[] commenters = comments != null ? comments.toArray(new String[0]) : new String[0];
+    
+    mentioners = processMentions(mentioners, comment.getString(CommentMongoEntity.title.getName()), new ArrayList<String>(), false);
+    //
+    commenters = processCommenters(commenters, comment.getString(CommentMongoEntity.poster.getName()), new ArrayList<String>(), false);
+    //
+    List<String> commentIds = (List<String>) activityEntity.get(ActivityMongoEntity.commentIds.getName());
+    commentIds.remove(commentId);
+    
+    BasicDBObject updateFields = new BasicDBObject();
+    updateFields.append(ActivityMongoEntity.commentIds.getName(), commentIds)
+                .append(ActivityMongoEntity.commenters.getName(), commenters)
+                .append(ActivityMongoEntity.mentioners.getName(), mentioners);
+    
+    BasicDBObject update = new BasicDBObject("$set", updateFields);
+    //
+    activityCol.update(new BasicDBObject("_id", new ObjectId(activityId)), update);
+    
 	}
   
   private void removeMentioner(String activityId, String... mentionIds) {
@@ -1841,4 +1888,75 @@ public class ActivityMongoStorageImpl extends ActivityStorageImpl {
     }
   }
 
+  private String[] processMentions(String[] mentionerIds, String title, List<String> addedOrRemovedIds, boolean isAdded) {
+    if (title == null || title.length() == 0) {
+      return ArrayUtils.EMPTY_STRING_ARRAY;
+    }
+    
+    Matcher matcher = MENTION_PATTERN.matcher(title);
+    while (matcher.find()) {
+      String remoteId = matcher.group().substring(1);
+      if (!USER_NAME_VALIDATOR_REGEX.matcher(remoteId).matches()) {
+        continue;
+      }
+      Identity identity = identityStorage.findIdentity(OrganizationIdentityProvider.NAME, remoteId);
+      // if not the right mention then ignore
+      if (identity != null) { 
+        String mentionStr = identity.getId() + MENTION_CHAR; // identityId@
+        mentionerIds = isAdded ? add(mentionerIds, mentionStr, addedOrRemovedIds) : remove(mentionerIds, mentionStr, addedOrRemovedIds);
+      }
+    }
+    return mentionerIds;
+  }
+  
+  private String[] processCommenters(String[] commenters, String commenter, List<String> addedOrRemovedIds, boolean isAdded) {
+    if (commenter == null || commenter.length() == 0) {
+      return ArrayUtils.EMPTY_STRING_ARRAY;
+    }
+    
+    String newCommenter = commenter + MENTION_CHAR; 
+    commenters = isAdded ? add(commenters, newCommenter, addedOrRemovedIds) : remove(commenters, newCommenter, addedOrRemovedIds);
+    
+    return commenters;
+  }
+  
+  private String[] add(String[] mentionerIds, String mentionStr, List<String> addedOrRemovedIds) {
+    if (ArrayUtils.toString(mentionerIds).indexOf(mentionStr) == -1) { // the first mention
+      addedOrRemovedIds.add(mentionStr.replace(MENTION_CHAR, ""));
+      return (String[]) ArrayUtils.add(mentionerIds, mentionStr + 1);
+    }
+    
+    String storedId = null;
+    for (String mentionerId : mentionerIds) {
+      if (mentionerId.indexOf(mentionStr) != -1) {
+        mentionerIds = (String[]) ArrayUtils.removeElement(mentionerIds, mentionerId);
+        storedId = mentionStr + (Integer.parseInt(mentionerId.split(MENTION_CHAR)[1]) + 1);
+        break;
+      }
+    }
+    
+
+    addedOrRemovedIds.add(mentionStr.replace(MENTION_CHAR, ""));
+    mentionerIds = (String[]) ArrayUtils.add(mentionerIds, storedId);
+    return mentionerIds;
+  }
+
+  private String[] remove(String[] mentionerIds, String mentionStr, List<String> addedOrRemovedIds) {
+    for (String mentionerId : mentionerIds) {
+      if (mentionerId.indexOf(mentionStr) != -1) {
+        int numStored = Integer.parseInt(mentionerId.split(MENTION_CHAR)[1]) - 1;
+        
+        if (numStored == 0) {
+          addedOrRemovedIds.add(mentionStr.replace(MENTION_CHAR, ""));
+          return (String[]) ArrayUtils.removeElement(mentionerIds, mentionerId);
+        }
+
+        mentionerIds = (String[]) ArrayUtils.removeElement(mentionerIds, mentionerId);
+        mentionerIds = (String[]) ArrayUtils.add(mentionerIds, mentionStr + numStored);
+        break;
+      }
+    }
+    return mentionerIds;
+  }
+  
 }

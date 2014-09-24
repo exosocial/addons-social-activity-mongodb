@@ -146,6 +146,47 @@ public class ActivityMongoStorageImplTestCase extends AbstractCoreTest {
     
   }
   
+  public void testMentionersAndCommenters() throws Exception {
+    ExoSocialActivity activity = new ExoSocialActivityImpl();
+    activity.setTitle("hello @demo @john");
+    mongoStorage.saveActivity(rootIdentity, activity);
+    tearDownActivityList.add(activity);
+    
+    ExoSocialActivity got = mongoStorage.getActivity(activity.getId());
+    assertNotNull(got);
+    assertEquals(2, got.getMentionedIds().length);
+    
+    ExoSocialActivity comment1 = new ExoSocialActivityImpl();
+    comment1.setTitle("comment 1");
+    comment1.setUserId(demoIdentity.getId());
+    mongoStorage.saveComment(activity, comment1);
+    ExoSocialActivity comment2 = new ExoSocialActivityImpl();
+    comment2.setTitle("comment 2");
+    comment2.setUserId(johnIdentity.getId());
+    mongoStorage.saveComment(activity, comment2);
+    
+    got = mongoStorage.getActivity(activity.getId());
+    assertEquals(2, got.getReplyToId().length);
+    assertEquals(2, got.getCommentedIds().length);
+    
+    ExoSocialActivity comment3 = new ExoSocialActivityImpl();
+    comment3.setTitle("hello @mary");
+    comment3.setUserId(johnIdentity.getId());
+    mongoStorage.saveComment(activity, comment3);
+    
+    got = mongoStorage.getActivity(activity.getId());
+    assertEquals(3, got.getReplyToId().length);
+    assertEquals(2, got.getCommentedIds().length);
+    assertEquals(3, got.getMentionedIds().length);
+    
+    mongoStorage.deleteComment(activity.getId(), comment3.getId());
+    
+    got = mongoStorage.getActivity(activity.getId());
+    assertEquals(2, got.getReplyToId().length);
+    assertEquals(2, got.getCommentedIds().length);
+    assertEquals(2, got.getMentionedIds().length);
+  }
+  
   public void testGetNewerOnActivityFeed() {
     createActivities(3, demoIdentity);
     ExoSocialActivity demoBaseActivity = mongoStorage.getActivityFeed(demoIdentity, 0, 10).get(0);
